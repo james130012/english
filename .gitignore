@@ -1,0 +1,63 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+error.log
+access.log
+
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 备份文件
+*.bak
+*.backup
+*.bad
+*.broken
+
+# 编辑器文件
+.vscode/
+.idea/
+*.sublime-*
+
+# PHP 缓存
+*.cache
+
+# Apache 配置（可能包含敏感信息）
+.htaccess
+
+# 密钥和证书
+*.key
+*.crt
+*.pem
+ssl/
+
+# 环境变量文件
+.env
+.env.local
+.env.production
+
+# Node.js (如果使用)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# WordPress 或其他CMS的特定文件
+wp-config.php
+
+# 用户上传文件（可能很大）
+uploads/
+user_files/
+
+# 大型媒体文件（可选）
+*.mp4
+*.avi
+*.mov
+*.zip
+*.tar.gz
