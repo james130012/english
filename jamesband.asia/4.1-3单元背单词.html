@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词抽背 (Units 1-3)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px;
+            padding: 25px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+            text-align: center;
+        }
+        h1 {
+            color: #0056b3;
+            margin-top: 0;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        button {
+            font-size: 16px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #btnStop {
+            background-color: #dc3545;
+        }
+        #btnStop:hover {
+            background-color: #a71d2a;
+        }
+        #btnShowAll {
+            background-color: #6c757d;
+        }
+        #btnShowAll:hover {
+            background-color: #5a6268;
+        }
+        #flashcard {
+            min-height: 180px;
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #fdfdfd;
+        }
+        #question {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a1a1a;
+        }
+        #answer {
+            font-size: 24px;
+            color: #28a745;
+            margin-top: 15px;
+            display: none; /* 初始隐藏 */
+        }
+        #allWordsList {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: left;
+            display: none; /* 初始隐藏 */
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #allWordsList p {
+            font-size: 16px;
+            padding: 5px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+         #allWordsList p:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>单词抽背工具 (Units 1-3)</h1>
+        
+        <div class="controls">
+            <button id="btnNext">开始 / 下一个</button>
+            <button id="btnShowAnswer">显示答案</button>
+            <button id="btnStop">停止</button>
+            <button id="btnShowAll">显示所有</button>
+        </div>
+
+        <div id="flashcard">
+            <div id="question">点击“开始”按钮</div>
+            <div id="answer"></div>
+        </div>
+
+        <div id="allWordsList"></div>
+    </div>
+
+    <script>
+        // --- 单词数据 (Units 1-3) ---
+        const vocabulary = [
+            // Unit 1
+            { en: 'suppose', zh: '认为' },
+            { en: 'birthmark', zh: '胎记' },
+            { en: 'bright', zh: '鲜艳的' },
+            { en: 'strawberry', zh: '草莓' },
+            { en: 'crowded', zh: '拥挤的' },
+            { en: 'disaster', zh: '灾难, 不幸' },
+            { en: 'therefore', zh: '因此, 所以' },
+            { en: 'cover', zh: '遮盖' },
+            { en: 'instead', zh: '代替; 而不是' },
+            { en: 'instead of', zh: '代替......' },
+            { en: 'although', zh: '虽然, 尽管' },
+            { en: 'bathroom', zh: '浴室, 卫生间' },
+            { en: 'quickly', zh: '很快; 马上' },
+            { en: 'truly', zh: '真正地, 确实地' },
+            { en: 'paint', zh: '(用颜料) 画, 绘' },
+            { en: 'yet', zh: '还, 尚' },
+            { en: 'anyway', zh: '总之' },
+            { en: 'already', zh: '已经' },
+            { en: 'difference', zh: '差别, 差异' },
+            { en: 'hate', zh: '恨, 不喜欢' },
+            { en: 'successful', zh: '成功的' },
+            { en: 'scientific', zh: '科学(上)的' },
+            { en: 'wise', zh: '明智的, 聪明的' },
+            { en: 'perfect', zh: '完美的, 极好的' },
+            { en: 'row', zh: '一排, 一行' },
+            { en: 'height', zh: '身高; 高度' },
+            { en: 'literature', zh: '文学; 文学作品' },
+            { en: 'character', zh: '(书、剧本、电影中的)人物, 角色' },
+            { en: 'wizard', zh: '男巫' },
+            { en: 'brain', zh: '脑, 大脑' },
+            { en: 'value', zh: '价值' },
+            { en: 'quality', zh: '素质; 品德, 品性' },
+            { en: 'impossible', zh: '不可能的' },
+            { en: 'nothing', zh: '没有什么东西; 没有事' },
+            { en: 'British', zh: '英国的; 英国人的' },
+            { en: 'actress', zh: '女演员' },
+            { en: 'silver', zh: '银的, 银质的' },
+            { en: 'the silver screen', zh: '电影业' },
+            { en: 'doubt', zh: '不确定; 怀疑' },
+            { en: 'fear', zh: '害怕; 恐惧; 担忧' },
+            { en: 'succeed', zh: '成功, 达成' },
+            { en: 'excellent', zh: '卓越的; 极好的' },
+            { en: 'second', zh: '秒' },
+            { en: 'satisfied', zh: '感到满意的' },
+            { en: 'risky', zh: '冒险的, 有风险的' },
+            { en: 'zero', zh: '零' },
+            { en: 'Olympics', zh: '奥林匹克运动会' },
+            { en: 'athlete', zh: '运动员; 田径运动员' },
+            { en: 'stick', zh: '黏, 贴' },
+            { en: 'stick to', zh: '坚持' },
+            { en: 'superman', zh: '超人' },
+            // Unit 2
+            { en: 'shout', zh: '大声说, 喊叫, 呼喊' },
+            { en: 'gate', zh: '大门' },
+            { en: 'build', zh: '建造, 盖; 造' },
+            { en: 'since', zh: '自从......以来, 自从......之后' },
+            { en: 'nor', zh: '也不' },
+            { en: 'hole', zh: '洞, 孔' },
+            { en: 'glad', zh: '高兴的, 开心的' },
+            { en: 'knock', zh: '敲(门窗)' },
+            { en: 'knock down', zh: '撞倒, 拆毁' },
+            { en: 'afraid', zh: '害怕的, 恐惧的' },
+            { en: 'message', zh: '(电影、书籍、讲话等的)要旨, 主题思想, 寓意' },
+            { en: 'double', zh: '双倍的, 两倍的' },
+            { en: 'understanding', zh: '理解' },
+            { en: 'return', zh: '返回, 回来, 回去' },
+            { en: 'lively', zh: '充满活力的, 生气勃勃的' },
+            { en: 'theirs', zh: '他们的, 她们的' },
+            { en: 'grade', zh: '年级' },
+            { en: 'article', zh: '(报刊的) 文章' },
+            { en: 'priceless', zh: '极珍贵的; 无价的' },
+            { en: 'offer', zh: '提供, 给予' },
+            { en: 'plan', zh: '计划' },
+            { en: 'quite', zh: '很; 较为' },
+            { en: 'stressed', zh: '焦虑的, 紧张的' },
+            { en: 'recently', zh: '最近, 近来, 不久前' },
+            { en: 'online', zh: '从网上, 在网上' },
+            { en: 'allow', zh: '使有可能; 允许, 容许, 准许' },
+            { en: 'ticket', zh: '票, 入场券' },
+            { en: 'true', zh: '真正的' },
+            { en: 'respect', zh: '尊敬, 顾及' },
+            { en: 'narrow', zh: '狭窄的' },
+            { en: 'lane', zh: '(常用于路名中) 巷' },
+            { en: 'unit', zh: '(计量用的) 单位' },
+            { en: 'perhaps', zh: '可能, 大概, 也许' },
+            { en: 'argue', zh: '争论, 争吵' },
+            { en: 'divide', zh: '(把......) 分开' },
+            { en: 'dividing line', zh: '分界线, 界限' },
+            { en: 'reach', zh: '实现, 达成' },
+            { en: 'agreement', zh: '(意见的)一致, 相合' },
+            { en: 'relative', zh: '亲属, 亲戚' },
+            { en: 'government', zh: '政府' },
+            { en: 'poem', zh: '诗; 韵文' },
+            { en: 'inside', zh: '在(容器或其他封闭的空间)里面' },
+            { en: 'neighbour', zh: '邻居, 邻人' },
+            { en: 'act', zh: '行为, 行动; 动作, 举动' },
+            { en: 'pass', zh: '过去, 流逝' },
+            { en: 'whenever', zh: '甭管, 每当' },
+            // Unit 3
+            { en: 'lend', zh: '借给, 借出' },
+            { en: 'lend (sb) a hand', zh: '帮助(某人)做事' },
+            { en: '3-D', zh: '三维的, 立体的' },
+            { en: 'printer', zh: '打印机' },
+            { en: 'invent', zh: '发明, 创造' },
+            { en: 'weigh', zh: '重, 重量是......' },
+            { en: 'kilogram', zh: '千克, 公斤' },
+            { en: 'fix', zh: '解决 (问题)' },
+            { en: 'invention', zh: '发明(物)' },
+            { en: 'download', zh: '下载' },
+            { en: 'apply', zh: '应用, 运用' },
+            { en: 'blind', zh: '盲的, 失明的' },
+            { en: 'machine', zh: '机器' },
+            { en: 'warn', zh: '警告, 告诫; 提醒' },
+            { en: 'object', zh: '物体' },
+            { en: 'sense', zh: '检测并记录' },
+            { en: 'congratulations', zh: '祝贺的话' },
+            { en: 'advertisement', zh: '广告' },
+            { en: 'everyday', zh: '日常的; 平常的; 每天的' },
+            { en: 'trouble', zh: '忧虑, 使苦恼' },
+            { en: 'creative', zh: '有创造力的' },
+            { en: 'imaginative', zh: '富有想象力的; 创新的' },
+            { en: 'inventor', zh: '发明者, 发明家' },
+            { en: 'widely', zh: '广泛地; 普遍地' },
+            { en: 'curiosity', zh: '好奇心' },
+            { en: 'talent', zh: '天赋, 才能' },
+            { en: 'electricity', zh: '电' },
+            { en: 'lightning', zh: '闪电' },
+            { en: 'lightning rod', zh: '避雷针' },
+            { en: 'pioneer', zh: '先驱, 先锋, 创始人' },
+            { en: 'exploration', zh: '勘探; 探索; 勘察; 勘查' },
+            { en: 'test', zh: '试验, 检验' },
+            { en: 'despite', zh: '尽管, 虽然' },
+            { en: 'failure', zh: '失败' },
+            { en: 'future', zh: '将来的, 未来的' },
+            { en: 'explorer', zh: '探险者; 勘察者' },
+            { en: 'risk', zh: '冒险举动' },
+            { en: 'drive', zh: '驱使' },
+            { en: 'earthquake', zh: '地震' },
+            { en: 'keyhole', zh: '锁眼, 钥匙孔' }
+        ];
+
+        // --- DOM 元素 ---
+        const questionDiv = document.getElementById('question');
+        const answerDiv = document.getElementById('answer');
+        const allWordsDiv = document.getElementById('allWordsList');
+        
+        const btnNext = document.getElementById('btnNext');
+        const btnShowAnswer = document.getElementById('btnShowAnswer');
+        const btnStop = document.getElementById('btnStop');
+        const btnShowAll = document.getElementById('btnShowAll');
+
+        let currentWord = null;
+        let isShowingEnglish = true;
+        let isAllWordsListPopulated = false;
+
+        // --- 功能函数 ---
+
+        // 显示下一个单词
+        function showNextWord() {
+            // 隐藏答案和列表
+            answerDiv.style.display = 'none';
+            allWordsDiv.style.display = 'none';
+
+            // 随机选一个词
+            const randomIndex = Math.floor(Math.random() * vocabulary.length);
+            currentWord = vocabulary[randomIndex];
+
+            // 随机决定显示英文还是中文
+            isShowingEnglish = Math.random() < 0.5;
+
+            if (isShowingEnglish) {
+                questionDiv.textContent = currentWord.en;
+            } else {
+                questionDiv.textContent = currentWord.zh;
+            }
+        }
+
+        // 显示答案
+        function showAnswer() {
+            if (currentWord) {
+                if (isShowingEnglish) {
+                    answerDiv.textContent = currentWord.zh;
+                } else {
+                    answerDiv.textContent = currentWord.en;
+                }
+                answerDiv.style.display = 'block';
+            }
+        }
+
+        // 停止活动 (清屏)
+        function stopActivity() {
+            questionDiv.textContent = '点击“开始”按钮';
+            answerDiv.textContent = '';
+            answerDiv.style.display = 'none';
+            allWordsDiv.style.display = 'none';
+            currentWord = null;
+        }
+
+        // 显示所有单词
+        function showAllWords() {
+            // 先清屏
+            stopActivity();
+            
+            // 填充列表 (如果还没填充过)
+            if (!isAllWordsListPopulated) {
+                allWordsDiv.innerHTML = ''; // 清空旧内容
+                vocabulary.forEach(word => {
+                    const p = document.createElement('p');
+                    p.textContent = `${word.en} - ${word.zh}`;
+                    allWordsDiv.appendChild(p);
+                });
+                isAllWordsListPopulated = true;
+            }
+            
+            // 显示列表
+            allWordsDiv.style.display = 'block';
+        }
+
+        // --- 绑定事件 ---
+        btnNext.addEventListener('click', showNextWord);
+        btnShowAnswer.addEventListener('click', showAnswer);
+        btnStop.addEventListener('click', stopActivity);
+        btnShowAll.addEventListener('click', showAllWords);
+
+    </script>
+</body>
+</html>
